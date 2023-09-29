@@ -15,8 +15,8 @@ visualizacaoDesejada = 0
 
 conexao = mysql.connector.connect(
         host = "localhost",
-        user = "urubu100",
-        password = "urubu100",
+        user = "aluno",
+        password = "sptech",
         port = 3306,
         database = "SistemaMarise"
         )
@@ -138,6 +138,13 @@ def MostrarValoresCPU():
             print("Thread " + str(i + 1) + ": "+ Fore.RED  + str(porcentagemUtilizacaoCore[i]) + "%" + Style.RESET_ALL)
         elif porcentagemUtilizacaoCore[i] > 50 :
                 print("Thread " + str(i + 1) + ": "+ Fore.YELLOW  + str(porcentagemUtilizacaoCore[i]) + "%" + Style.RESET_ALL)
+                mensagem = {"text": f"""
+                    ⚙️ === ALERTA❗️
+                    Descrição => Sua CPU está sobrecarregando!
+                    """}
+                chatMonitoramento = "https://hooks.slack.com/services/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"
+                postMsg = requests.post(chatMonitoramento, data=json.dumps(mensagem))
+                print(postMsg.status_code)
         else :
             print("Thread " + str(i + 1) + ": "+ Fore.GREEN  + str(porcentagemUtilizacaoCore[i]) + "%" + Style.RESET_ALL)
     
@@ -222,6 +229,13 @@ def MostrarValoresDiscoLocal():
         print("\n" + "Em uso: " + Fore.RED + str(porcentagemEmUso) + "%" + Style.RESET_ALL + "\n")
     elif porcentagemEmUso > 50 :
         print("\n" + "Em uso: " + Fore.YELLOW + str(porcentagemEmUso) + "%" + Style.RESET_ALL + "\n")
+        mensagem = {"text": f"""
+            ⚙️ === ALERTA❗️
+            Descrição => Seu Disco está sobrecarregando!
+            """}
+        chatMonitoramento = "https://hooks.slack.com/services/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"
+        postMsg = requests.post(chatMonitoramento, data=json.dumps(mensagem))
+        print(postMsg.status_code)
     else :
         print("\n" + "Em uso: " + Fore.GREEN + str(porcentagemEmUso) + "%" + Style.RESET_ALL + "\n")
     
@@ -282,8 +296,9 @@ def MostrarValoresRAM():
                 ⚙️ === ALERTA❗️
                 Descrição => Sua Memória RAM está sobrecarregando!
                 """}
-            chatMonitoramento = "https://hooks.slack.com/services/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"
+            chatMonitoramento = "https://hooks.slack.com/services/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"
             postMsg = requests.post(chatMonitoramento, data=json.dumps(mensagem))
+            print(postMsg.status_code)
     else :
             print("\n" + "Em uso: " + Fore.GREEN + str(ramPercentualUtilizado) + "%" + Style.RESET_ALL + "\n")
         
