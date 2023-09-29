@@ -282,7 +282,7 @@ def MostrarValoresRAM():
                 ⚙️ === ALERTA❗️
                 Descrição => Sua Memória RAM está sobrecarregando!
                 """}
-            chatMonitoramento = "https://hooks.slack.com/services/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"
+            chatMonitoramento = "https://hooks.slack.com/services/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"
             postMsg = requests.post(chatMonitoramento, data=json.dumps(mensagem))
     else :
             print("\n" + "Em uso: " + Fore.GREEN + str(ramPercentualUtilizado) + "%" + Style.RESET_ALL + "\n")
