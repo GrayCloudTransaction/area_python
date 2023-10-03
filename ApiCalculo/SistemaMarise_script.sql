@@ -1,3 +1,4 @@
+-- Active: 1696336889733@@127.0.0.1@3306@central_dados
 CREATE DATABASE SistemaMarise;
 USE SistemaMarise;
 

@@ -138,13 +138,13 @@ def MostrarValoresCPU():
             print("Thread " + str(i + 1) + ": "+ Fore.RED  + str(porcentagemUtilizacaoCore[i]) + "%" + Style.RESET_ALL)
         elif porcentagemUtilizacaoCore[i] > 50 :
                 print("Thread " + str(i + 1) + ": "+ Fore.YELLOW  + str(porcentagemUtilizacaoCore[i]) + "%" + Style.RESET_ALL)
-                mensagem = {"text": f"""
+                mensagemCpu = {"text": f"""
                     ⚙️ === ALERTA❗️
                     Descrição => Sua CPU está sobrecarregando!
                     """}
-                chatMonitoramento = "https://hooks.slack.com/services/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"
-                postMsg = requests.post(chatMonitoramento, data=json.dumps(mensagem))
-                print(postMsg.status_code)
+                chatMonitoramentoCpu = "https://hooks.slack.com/services/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"
+                postMsgCpu = requests.post(chatMonitoramentoCpu, data=json.dumps(mensagemCpu))
+                print(postMsgCpu.status_code)
         else :
             print("Thread " + str(i + 1) + ": "+ Fore.GREEN  + str(porcentagemUtilizacaoCore[i]) + "%" + Style.RESET_ALL)
     
@@ -229,13 +229,13 @@ def MostrarValoresDiscoLocal():
         print("\n" + "Em uso: " + Fore.RED + str(porcentagemEmUso) + "%" + Style.RESET_ALL + "\n")
     elif porcentagemEmUso > 50 :
         print("\n" + "Em uso: " + Fore.YELLOW + str(porcentagemEmUso) + "%" + Style.RESET_ALL + "\n")
-        mensagem = {"text": f"""
+        mensagemDisco = {"text": f"""
             ⚙️ === ALERTA❗️
             Descrição => Seu Disco está sobrecarregando!
             """}
-        chatMonitoramento = "https://hooks.slack.com/services/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"
-        postMsg = requests.post(chatMonitoramento, data=json.dumps(mensagem))
-        print(postMsg.status_code)
+        chatMonitoramentoDisco = "https://hooks.slack.com/services/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"
+        postMsgDisco = requests.post(chatMonitoramentoDisco, data=json.dumps(mensagemDisco))
+        print(postMsgDisco.status_code)
     else :
         print("\n" + "Em uso: " + Fore.GREEN + str(porcentagemEmUso) + "%" + Style.RESET_ALL + "\n")
     
@@ -292,13 +292,13 @@ def MostrarValoresRAM():
             print("\n" + "Em uso: " + Fore.RED + str(ramPercentualUtilizado) + "%" + Style.RESET_ALL + "\n")
     elif ramPercentualUtilizado > 50 :
             print("\n" + "Em uso: " + Fore.YELLOW + str(ramPercentualUtilizado) + "%" + Style.RESET_ALL + "\n")
-            mensagem = {"text": f"""
+            mensagemRam = {"text": f"""
                 ⚙️ === ALERTA❗️
                 Descrição => Sua Memória RAM está sobrecarregando!
                 """}
-            chatMonitoramento = "https://hooks.slack.com/services/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"
-            postMsg = requests.post(chatMonitoramento, data=json.dumps(mensagem))
-            print(postMsg.status_code)
+            chatMonitoramentoRam = "https://hooks.slack.com/services/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"
+            postMsgRam = requests.post(chatMonitoramentoRam, data=json.dumps(mensagemRam))
+            print(postMsgRam.status_code)
     else :
             print("\n" + "Em uso: " + Fore.GREEN + str(ramPercentualUtilizado) + "%" + Style.RESET_ALL + "\n")
         
