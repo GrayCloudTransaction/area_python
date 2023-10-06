@@ -8,8 +8,35 @@ import mysql.connector
 import mysql.connector.errorcode
 import json
 import requests
+from requests.auth import HTTPBasicAuth
+import json
 
+url = "https://greycloudtransactions.atlassian.net/rest/api/3/issue"
 
+auth = HTTPBasicAuth("GrayCloudTransactions@hotmail.com", "ATATT3xFfGF0kbfNl5HOvBnInraAWGGdKWpsFgSo5yzeTBFgE-Jo1Lj1Q7Dog8q2ur3aZ7Nubhgho38VrhPuGSlmesGhX9Z1phF1ODrid0H0v116pRIHrE5xqsbGY3pGRl0lCjbkG4UcAjG9QhPeyx0m0_Kj0wV1DEW5GRGECoHqaYhc8-yIH74=876FD2F3")
+
+headers = {
+    "Accept":"application/json",
+    "Content-Type": "application/json"
+}
+
+payload = json.dumps({
+    "field" :{
+        "summary": "TESTE API JIRA",
+        "project":{"key":"BSX"},
+        'issuetype': {'name': 'Questions for analytics'}
+    }
+})
+
+response = requests.request(
+    "POST",
+    url,
+    data = payload,
+    headers = headers,
+    auth = auth
+)
+
+print(json.dumps(json.loads(response.text), sort_keys=True, indent=4, separators=(",",": ")))
 
 visualizacaoDesejada = 0
 
