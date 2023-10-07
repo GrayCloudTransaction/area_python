@@ -10,33 +10,26 @@ import json
 import requests
 from requests.auth import HTTPBasicAuth
 import json
+from jira import JIRA
 
-url = "https://greycloudtransactions.atlassian.net/rest/api/3/issue"
+jira_token = "ATATT3xFfGF0aXVjL68JsNQDXa24_XV67nnBFeWfkRw0qMqMefnku35UjV4tfuM1su6ygv3AZxVwnhXu8_wt-Kg-thakUGcUFJfTamHFhp1XXr3D9yvL5yKSXnzNsPbjLbs7UfSOzgN8fhaX_9kQAFaACBQpiyKGWPk2Vtes0YEiNbr6xd136H4=1116E5CD"
+url = "https://greycloudtransactions.atlassian.net/rest/api/2/search"
+server_name = "https://greycloudtransactions.atlassian.net"
+email = 'GrayCloudTransactions@hotmail.com'
 
-auth = HTTPBasicAuth("GrayCloudTransactions@hotmail.com", "ATATT3xFfGF0kbfNl5HOvBnInraAWGGdKWpsFgSo5yzeTBFgE-Jo1Lj1Q7Dog8q2ur3aZ7Nubhgho38VrhPuGSlmesGhX9Z1phF1ODrid0H0v116pRIHrE5xqsbGY3pGRl0lCjbkG4UcAjG9QhPeyx0m0_Kj0wV1DEW5GRGECoHqaYhc8-yIH74=876FD2F3")
-
-headers = {
-    "Accept":"application/json",
-    "Content-Type": "application/json"
-}
-
-payload = json.dumps({
-    "field" :{
-        "summary": "TESTE API JIRA",
-        "project":{"key":"BSX"},
-        'issuetype': {'name': 'Questions for analytics'}
-    }
-})
-
-response = requests.request(
-    "POST",
-    url,
-    data = payload,
-    headers = headers,
-    auth = auth
+jira_connection = JIRA(
+    basic_auth=(email, jira_token),
+    server=server_name
 )
 
-print(json.dumps(json.loads(response.text), sort_keys=True, indent=4, separators=(",",": ")))
+issue_dict = {
+    'project': {'key': 'GRCT'},
+    'summary': "Testing issue from Python Jira Handbook",
+    'description': 'Detailed ticket description.',
+    'issuetype': {'id': '10007'}, 
+}
+
+new_issue = jira_connection.create_issue(fields=issue_dict)
 
 visualizacaoDesejada = 0
 
@@ -45,7 +38,7 @@ conexao = mysql.connector.connect(
         user = "aluno",
         password = "sptech",
         port = 3306,
-        database = "SistemaMarise"
+        database = "ScriptGCT"
         )
 
 comando = conexao.cursor()
@@ -186,28 +179,40 @@ def MostrarValoresCPU():
 
     UtilizacaoCore = "{:.0f}".format(porcentagemUtilizacaoCore[i]); 
     freqCpuMin = "{:.0f}".format(frequenciaCpu.min);
-    dataHoraNow = datetime.now()
+    dataHoraNow = datetime.now();
 
 
-    comando.execute("INSERT INTO Registro(idServidor, tipoRegistro, valorRegistro, unidadeRegistro, dateNow) VALUES" 
-                    f"(1,'Quantidade de Cores', '{qtdCores}', 'null', '{dataHoraNow}')," +
-                    f"(1,'Quantidade de Threads', '{qtdThreads}', 'null','{dataHoraNow}')," +
-                    f"(1,'Tempo CPU User','{temposCpu.user}','segundos','{dataHoraNow}')," +
-                    f"(1,'Tempo CPU System','{temposCpu.system}','segundos','{dataHoraNow}')," +
-                    f"(1,'Tempo CPU Idle','{temposCpu.idle}','segundos','{dataHoraNow}')," +
-                    f"(1,'Porcentagem Utilizada Core', '{UtilizacaoCore}', '%','{dataHoraNow}')," + 
-                    f"(1,'Porcentagem Utilizada CPU', '{porcentagemUtilizacaoCPU}', '%','{dataHoraNow}')," + 
-                    f"(1,'Frequência CPU', '{frequenciaCpu.current}', 'MHz','{dataHoraNow}')," +
-                    f"(1,'Freq. CPU Min.','{frequenciaCpu.min}', 'MHz','{dataHoraNow}')," +
-                    f"(1,'Freq. CPU Max.','{frequenciaCpu.max}', 'MHz','{dataHoraNow}')");
+    # comando.execute("INSERT INTO Registro(idServidor, tipoRegistro, valorRegistro, unidadeRegistro, dateNow) VALUES" 
+    #                 f"(1,'Quantidade de Cores', '{qtdCores}', 'null', '{dataHoraNow}')," +
+    #                 f"(1,'Quantidade de Threads', '{qtdThreads}', 'null','{dataHoraNow}')," +
+    #                 f"(1,'Tempo CPU User','{temposCpu.user}','segundos','{dataHoraNow}')," +
+    #                 f"(1,'Tempo CPU System','{temposCpu.system}','segundos','{dataHoraNow}')," +
+    #                 f"(1,'Tempo CPU Idle','{temposCpu.idle}','segundos','{dataHoraNow}')," +
+    #                 f"(1,'Porcentagem Utilizada Core', '{UtilizacaoCore}', '%','{dataHoraNow}')," + 
+    #                 f"(1,'Porcentagem Utilizada CPU', '{porcentagemUtilizacaoCPU}', '%','{dataHoraNow}')," + 
+    #                 f"(1,'Frequência CPU', '{frequenciaCpu.current}', 'MHz','{dataHoraNow}')," +
+    #                 f"(1,'Freq. CPU Min.','{frequenciaCpu.min}', 'MHz','{dataHoraNow}')," +
+    #                 f"(1,'Freq. CPU Max.','{frequenciaCpu.max}', 'MHz','{dataHoraNow}')");
+
+    comando.execute("INSERT INTO `registro`(valor_registro, data_registro, fk_modelo_componente) VALUES" 
+                    f"('{qtdCores}', '{dataHoraNow}', 1)," +
+                    f"('{qtdThreads}', '{dataHoraNow}', 1)," +
+                    f"('{temposCpu.user}', '{dataHoraNow}', 1)," +
+                    f"('{temposCpu.system}', '{dataHoraNow}', 1)," +
+                    f"('{temposCpu.idle}', '{dataHoraNow}', 1)," +
+                    f"('{UtilizacaoCore}', '{dataHoraNow}', 1)," + 
+                    f"('{porcentagemUtilizacaoCPU}', '{dataHoraNow}', 1)," + 
+                    f"('{frequenciaCpu.current}', '{dataHoraNow}', 1)," +
+                    f"('{frequenciaCpu.min}', '{dataHoraNow}', 1)," +
+                    f"('{frequenciaCpu.max}', '{dataHoraNow}', 1)");
     
     # print("No of Record Inserted :", comando.rowcount) 
     #print("Inserted Id :", comando.lastrowid) 
-    conexao.commit()  
+conexao.commit()  
     
     
     
-    print("=" * 100)
+print("=" * 100)
 
 
 def MostrarValoresDiscoLocal():
@@ -274,11 +279,16 @@ def MostrarValoresDiscoLocal():
 
     dataHoraNow = datetime.now()
 
-    comando.execute("INSERT INTO Registro(idServidor, tipoRegistro, valorRegistro, unidadeRegistro, dateNow) VALUES" 
-                    f"(1,'Quantidade total de memória de massa', '{formatted_total1}', 'Gigabytes', '{dataHoraNow}')," +
-                    f"(1,'Quantidade livre de memória de massa', '{formatted_total3}', 'Gigabytes', '{dataHoraNow}')," +
-                    f"(1,'Quantidade de memória de massa em uso','{formatted_total2}','Gigabytes', '{dataHoraNow}')," +
-                    f"(1,'Memória de massa em uso','{porcentagemEmUso}','%', '{dataHoraNow}')");
+    # comando.execute("INSERT INTO Registro(idServidor, tipoRegistro, valorRegistro, unidadeRegistro, dateNow) VALUES" 
+    #                 f"(1,'Quantidade total de memória de massa', '{formatted_total1}', 'Gigabytes', '{dataHoraNow}')," +
+    #                 f"(1,'Quantidade livre de memória de massa', '{formatted_total3}', 'Gigabytes', '{dataHoraNow}')," +
+    #                 f"(1,'Quantidade de memória de massa em uso','{formatted_total2}','Gigabytes', '{dataHoraNow}')," +
+    #                 f"(1,'Memória de massa em uso','{porcentagemEmUso}','%', '{dataHoraNow}')");
+    comando.execute("INSERT INTO `registro`(valor_registro, data_registro, fk_modelo_componente) VALUES" 
+                    f"('{formatted_total1}', '{dataHoraNow}', 1)," +
+                    f"('{formatted_total3}', '{dataHoraNow}', 1)," +
+                    f"('{formatted_total2}', '{dataHoraNow}', 1)," +
+                    f"('{porcentagemEmUso}', '{dataHoraNow}', 1)");
 
     conexao.commit();
     
@@ -335,12 +345,19 @@ def MostrarValoresRAM():
 
     dataHoraNow = datetime.now()
 
-    comando.execute("INSERT INTO Registro(idServidor, tipoRegistro, valorRegistro, unidadeRegistro, dateNow) VALUES" 
-                        f"(1,'Memória RAM total', '{ramByteToGigabyteTotal}', 'Gigabytes', '{dataHoraNow}')," +
-                        f"(1,'Memória RAM disponível', '{ramByteToGigabyteDisponivel}', 'Gigabytes', '{dataHoraNow}')," +
-                        f"(1,'Memória RAM usado','{ramByteToGigabyteUsando}','Gigabytes', '{dataHoraNow}')," +
-                        f"(1,'Memória RAM livre','{ramByteToGigabyteLivre}','Gigabytes', '{dataHoraNow}')," +
-                        f"(1,'Memória RAM em uso','{ramPercentualUtilizado}','%', '{dataHoraNow}')");
+    # comando.execute("INSERT INTO Registro(idServidor, tipoRegistro, valorRegistro, unidadeRegistro, dateNow) VALUES" 
+    #                     f"(1,'Memória RAM total', '{ramByteToGigabyteTotal}', 'Gigabytes', '{dataHoraNow}')," +
+    #                     f"(1,'Memória RAM disponível', '{ramByteToGigabyteDisponivel}', 'Gigabytes', '{dataHoraNow}')," +
+    #                     f"(1,'Memória RAM usado','{ramByteToGigabyteUsando}','Gigabytes', '{dataHoraNow}')," +
+    #                     f"(1,'Memória RAM livre','{ramByteToGigabyteLivre}','Gigabytes', '{dataHoraNow}')," +
+    #                     f"(1,'Memória RAM em uso','{ramPercentualUtilizado}','%', '{dataHoraNow}')");
+    
+    comando.execute("INSERT INTO `registro`(valor_registro, data_registro, fk_modelo_componente) VALUES" 
+                        f"('{ramByteToGigabyteTotal}', '{dataHoraNow}', 1)," +
+                        f"('{ramByteToGigabyteDisponivel}', '{dataHoraNow}', 1)," +
+                        f"('{ramByteToGigabyteUsando}', '{dataHoraNow}', 1)," +
+                        f"('{ramByteToGigabyteLivre}', '{dataHoraNow}', 1)," +
+                        f"('{ramPercentualUtilizado}', '{dataHoraNow}', 1)");
 
     conexao.commit();
 
