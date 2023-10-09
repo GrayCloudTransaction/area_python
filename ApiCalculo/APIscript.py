@@ -285,10 +285,10 @@ def MostrarValoresDiscoLocal():
     #                 f"(1,'Quantidade de memória de massa em uso','{formatted_total2}','Gigabytes', '{dataHoraNow}')," +
     #                 f"(1,'Memória de massa em uso','{porcentagemEmUso}','%', '{dataHoraNow}')");
     comando.execute("INSERT INTO `registro`(valor_registro, data_registro, fk_modelo_componente) VALUES" 
-                    f"('{formatted_total1}', '{dataHoraNow}', 1)," +
-                    f"('{formatted_total3}', '{dataHoraNow}', 1)," +
-                    f"('{formatted_total2}', '{dataHoraNow}', 1)," +
-                    f"('{porcentagemEmUso}', '{dataHoraNow}', 1)");
+                    f"('{formatted_total1}', '{dataHoraNow}', 7)," +
+                    f"('{formatted_total3}', '{dataHoraNow}', 7)," +
+                    f"('{formatted_total2}', '{dataHoraNow}', 7)," +
+                    f"('{porcentagemEmUso}', '{dataHoraNow}', 7)");
 
     conexao.commit();
     
@@ -353,11 +353,11 @@ def MostrarValoresRAM():
     #                     f"(1,'Memória RAM em uso','{ramPercentualUtilizado}','%', '{dataHoraNow}')");
     
     comando.execute("INSERT INTO `registro`(valor_registro, data_registro, fk_modelo_componente) VALUES" 
-                        f"('{ramByteToGigabyteTotal}', '{dataHoraNow}', 1)," +
-                        f"('{ramByteToGigabyteDisponivel}', '{dataHoraNow}', 1)," +
-                        f"('{ramByteToGigabyteUsando}', '{dataHoraNow}', 1)," +
-                        f"('{ramByteToGigabyteLivre}', '{dataHoraNow}', 1)," +
-                        f"('{ramPercentualUtilizado}', '{dataHoraNow}', 1)");
+                        f"('{ramByteToGigabyteTotal}', '{dataHoraNow}', 4)," +
+                        f"('{ramByteToGigabyteDisponivel}', '{dataHoraNow}', 4)," +
+                        f"('{ramByteToGigabyteUsando}', '{dataHoraNow}', 4)," +
+                        f"('{ramByteToGigabyteLivre}', '{dataHoraNow}', 4)," +
+                        f"('{ramPercentualUtilizado}', '{dataHoraNow}', 4)");
 
     conexao.commit();
 
