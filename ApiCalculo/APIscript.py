@@ -11,7 +11,7 @@ import json
 from jira import JIRA
 from API_script_terminal import *
 
-jira_token = "ATATT3xFfGF0l5bpDf9hQkJDGmZrKKmDnzwCk4Gh27zc_pS9WyyDtsMBZJe-ah7wEsyq3Ck_HG3Frvh-loVWJXFUdCaB9wvFTeN-N0pLGlXAHW1BVdYfN6XrOsO6aAbfKO_0W8VPVaXWXBYy7h_YXpYtfFS39rDqjWNhPn-9N7UlhFn8GX6kTyQ=517218CC"
+jira_token = "ATATT3xFfGF004HezdV_tKYO8JymCLnHI9GQy24sHgCegDGJFlvCmHTFgUYTsnb4hmGQI8fqvO99SQRR7vqg1VS8b0OEwPOkGCVq75q6aTm4i5fziZDbPI50GuBvahn37l6CtRxYO53h9ashpYR2KMRFac26J-mv_ywDHEqVNQ6iFPuljxbvPcc=FF309C42"
 url = "https://greycloudtransactions.atlassian.net/rest/api/2/search"
 server_name = "https://greycloudtransactions.atlassian.net"
 email = 'GrayCloudTransactions@hotmail.com'
@@ -21,7 +21,7 @@ jira_connection = JIRA(
     server=server_name
 )
 
-#issue_dict = {
+# issue_dict = {
 #    'project': {'key': 'SUP'},
 #    'summary': "Testing issue from Python Jira Handbook",
 #    'description': 'Detailed ticket description.',
@@ -35,26 +35,44 @@ visualizacaoDesejada = 0
 
 conexao = mysql.connector.connect(
         host = "localhost",
-        user = "aluno",
-        password = "sptech",
+        user = "root",
+        password = "",
         port = 3306,
         database = "ScriptGCT"
     )
 
 comando = conexao.cursor()
 
-def MostrarValoresCPU():
+input_componente = int(input("Qual o id do componente "))
+
+def MostrarValoresCPU(input_componente):
     porcentagemUtilizacaoCPU = psutil.cpu_percent()
-    qtdThreads = psutil.cpu_count()
     
     #conexao.close()
 
     bannerCpu()
-
+    
     print('-' * 100 + "\n")     
     print((" " * 35) + "Porcentagem de Utilização da CPU: \n")
-    if(porcentagemUtilizacaoCPU > 70):
+    if(porcentagemUtilizacaoCPU > 1):
         print("\n" + "Utilização da Total da CPU:" + Fore.RED+str(porcentagemUtilizacaoCPU) + "%" + Style.RESET_ALL + "\n")
+        
+        issue_dict = {
+            'project': {'key': 'SUP'},
+            'summary': f"Componente está com mais de {porcentagemUtilizacaoCPU}% de uso da CPU!!! ",
+            'description': f'O componente de disco com ID {input_componente} está com mais de {porcentagemUtilizacaoCPU}% de uso da CPU!!!',
+            'issuetype': {"id":"10022"},
+        }
+
+        new_issue = jira_connection.create_issue(fields=issue_dict)
+        
+        mensagem_CPU = {"text": f"""
+            ⚙️ === ALERTA❗️
+            Descrição => Sua CPU está sobrecarregando!
+            """}
+        chatMonitoramentoCpu = "https://hooks.slack.com/services/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"
+        postMsgCpu = requests.post(chatMonitoramentoCpu, data=json.dumps(mensagem_CPU))
+        
     elif porcentagemUtilizacaoCPU > 50 :
         print("\n" + "Utilização da Total da CPU:" + Fore.YELLOW+str(porcentagemUtilizacaoCPU) + "%" + Style.RESET_ALL + "\n")
     else :
@@ -64,17 +82,13 @@ def MostrarValoresCPU():
     print("-" * 100)
 
     dataHoraNow = datetime.now()
-
     
-    comando.execute("INSERT INTO registro (valor_registro, data_registro, fk_medida, fk_componente) VALUES" 
-                    f"({porcentagemUtilizacaoCPU}, '{dataHoraNow}', 1);")
+    comando.execute(f"INSERT INTO `registro`(valor_registro, data_registro, fk_componente) VALUES" 
+                    f"({porcentagemUtilizacaoCPU}, '{dataHoraNow}', {input_componente});")
     
-    # print("No of Record Inserted :", comando.rowcount) 
-    # print("Inserted Id :", comando.lastrowid) 
+    conexao.commit()
 
-conexao.commit()
-
-def MostrarValoresDiscoLocal():
+def MostrarValoresDiscoLocal(input_componente):
     porcentagem_livre = 100 - psutil.disk_usage('/').percent
 
     bannerDisco()
@@ -93,6 +107,16 @@ def MostrarValoresDiscoLocal():
             """}
         chatMonitoramentoDisco = "https://hooks.slack.com/services/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"
         postMsgDisco = requests.post(chatMonitoramentoDisco, data=json.dumps(mensagemDisco))
+        
+        issue_dict = {
+            'project': {'key': 'SUP'},
+            'summary': f"Componente está com apenas {porcentagem_livre}% de espaço livre!!!",
+            'description': f'O componente de disco com ID {input_componente} está com apenas {porcentagem_livre}% de espaço livre!!!',
+            'issuetype': {"id":"10022"},
+        }
+
+        new_issue = jira_connection.create_issue(fields=issue_dict)
+        
         print(postMsgDisco.status_code)
     else :
         print("\n" + "Em uso: " + Fore.GREEN + str(porcentagem_livre) + "%" + Style.RESET_ALL + "\n")
@@ -104,19 +128,16 @@ def MostrarValoresDiscoLocal():
     print(psutil.disk_usage('/'))
 
     dataHoraNow = datetime.now()
-
-    comando.execute("INSERT INTO `registro`(valor_registro, data_registro, fk_medida, fk_componente) VALUES" 
-                    f"('{porcentagem_livre}', '{dataHoraNow}', 1,1);")
+    comando.execute(f"INSERT INTO `registro`(valor_registro, data_registro, fk_componente) VALUES" 
+                    f"('{porcentagem_livre}', '{dataHoraNow}',${input_componente});")
 
     conexao.commit()
-    
-
 
     print("=" * 100)
         
 
 # Fim das Info Disco Local
-def MostrarValoresRAM():
+def MostrarValoresRAM(input_componente):
 
     valoresMemoriaRam = psutil.virtual_memory()
     ramPercentualUtilizado = valoresMemoriaRam.percent
@@ -128,21 +149,29 @@ def MostrarValoresRAM():
     print((" " * 37) + "Dados da Memória Virtual: \n")
     print("-" * 100)
 
-    # print( "Memória RAM percentual: " + Fore.BLUE + str(ramPercentualUtilizado) + "%" + Style.RESET_ALL + "\n")
-
     print('-' * 100)
 
     if(ramPercentualUtilizado > 70):
-            print("\n" + "Em uso: " + Fore.RED + str(ramPercentualUtilizado) + "%" + Style.RESET_ALL + "\n")
+        print("\n" + "Em uso: " + Fore.RED + str(ramPercentualUtilizado) + "%" + Style.RESET_ALL + "\n")
+        mensagemRam = {"text": f"""
+            ⚙️ === ALERTA❗️
+            Descrição => Sua Memória RAM está sobrecarregando!
+            """}
+        chatMonitoramentoRam = "https://hooks.slack.com/services/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"
+        postMsgRam = requests.post(chatMonitoramentoRam, data=json.dumps(mensagemRam))
+        print(postMsgRam.status_code)
+        
+        issue_dict = {
+            'project': {'key': 'SUP'},
+                'summary': f"Componente está com mais de {ramPercentualUtilizado}% de uso da memória RAM!!! ",
+            'description': f'O componente de disco com ID {ramPercentualUtilizado} está com mais de {ramPercentualUtilizado}% de uso da memória RAM!!!',
+            'issuetype': {"id":"10022"},
+        }
+        new_issue = jira_connection.create_issue(fields=issue_dict)
+            
     elif ramPercentualUtilizado > 50 :
-            print("\n" + "Em uso: " + Fore.YELLOW + str(ramPercentualUtilizado) + "%" + Style.RESET_ALL + "\n")
-            mensagemRam = {"text": f"""
-                ⚙️ === ALERTA❗️
-                Descrição => Sua Memória RAM está sobrecarregando!
-                """}
-            chatMonitoramentoRam = "https://hooks.slack.com/services/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"
-            postMsgRam = requests.post(chatMonitoramentoRam, data=json.dumps(mensagemRam))
-            print(postMsgRam.status_code)
+        print("\n" + "Em uso: " + Fore.YELLOW + str(ramPercentualUtilizado) + "%" + Style.RESET_ALL + "\n")
+        
     else :
             print("\n" + "Em uso: " + Fore.GREEN + str(ramPercentualUtilizado) + "%" + Style.RESET_ALL + "\n")
         
@@ -157,7 +186,17 @@ def MostrarValoresRAM():
             chatMonitoramentoSwap = "https://hooks.slack.com/services/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"
             postMsgSwap = requests.post(chatMonitoramentoSwap, data=json.dumps(mensagemSwap))
             print(postMsgSwap.status_code)
-    else :
+            
+            issue_dict = {
+                'project': {'key': 'SUP'},
+                'summary': f"Disco está com mais de {swap}% de uso da memória swap!!! ",
+                'description': f'O componente de disco com ID {input_componente} está com mais de {swap}% de uso da memória swap!!!',
+                'issuetype': {"id":"10022"},
+            }
+
+            new_issue = jira_connection.create_issue(fields=issue_dict)
+            
+    else:
             print("\n" + "Em uso: " + Fore.GREEN + str(swap) + "%" + Style.RESET_ALL + "\n")
         
     print('-' * 100)
@@ -165,48 +204,39 @@ def MostrarValoresRAM():
 
     dataHoraNow = datetime.now()
 
-    # comando.execute("INSERT INTO Registro(idServidor, tipoRegistro, valorRegistro, unidadeRegistro, dateNow) VALUES" 
-    #                     f"(1,'Memória RAM total', '{ramByteToGigabyteTotal}', 'Gigabytes', '{dataHoraNow}')," +
-    #                     f"(1,'Memória RAM disponível', '{ramByteToGigabyteDisponivel}', 'Gigabytes', '{dataHoraNow}')," +
-    #                     f"(1,'Memória RAM usado','{ramByteToGigabyteUsando}','Gigabytes', '{dataHoraNow}')," +
-    #                     f"(1,'Memória RAM livre','{ramByteToGigabyteLivre}','Gigabytes', '{dataHoraNow}')," +
-    #                     f"(1,'Memória RAM em uso','{ramPercentualUtilizado}','%', '{dataHoraNow}')");
-    
-    comando.execute("INSERT INTO `registro`(valor_registro, data_registro, fk_medida, fk_componente) VALUES" 
-                        f"('{ramPercentualUtilizado}', '{dataHoraNow}', 1, 1);")
+    comando.execute(f"INSERT INTO `registro`(valor_registro, data_registro, fk_componente) VALUES" 
+                        f"('{ramPercentualUtilizado}', '{dataHoraNow}', {input_componente});")
 
     conexao.commit()
-
-
 
     print("=" * 100)
 
 def MostrarValores(visuDesejada):
     visualizacaoDesejada = visuDesejada
     if visualizacaoDesejada == 1:
-        for i in range(0, 10):
+        for i in range(0, 1):
             clearConsole()
-            MostrarValoresCPU()
+            MostrarValoresCPU(input_componente)
             sleep(2)
             clearConsole()
     elif visualizacaoDesejada == 2:
         for i in range(0, 10):
             clearConsole()
-            MostrarValoresDiscoLocal()
+            MostrarValoresDiscoLocal(input_componente)
             sleep(2)
             clearConsole()
     elif visualizacaoDesejada == 3:
         for i in range(0, 10):
             clearConsole()
-            MostrarValoresRAM()
+            MostrarValoresRAM(input_componente)
             sleep(2)
             clearConsole()
     elif (visualizacaoDesejada == 4):
         for i in range(0, 10):
             clearConsole()
-            MostrarValoresCPU()
-            MostrarValoresDiscoLocal()
-            MostrarValoresRAM()
+            MostrarValoresCPU(input_componente)
+            MostrarValoresDiscoLocal(input_componente)
+            MostrarValoresRAM(input_componente)
             sleep(2)
             clearConsole()
     elif visualizacaoDesejada == 0:
