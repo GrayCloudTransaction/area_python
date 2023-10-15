@@ -10,8 +10,10 @@ import requests
 import json
 from jira import JIRA
 from API_script_terminal import *
+import keyboard
 
-jira_token = "ATATT3xFfGF004HezdV_tKYO8JymCLnHI9GQy24sHgCegDGJFlvCmHTFgUYTsnb4hmGQI8fqvO99SQRR7vqg1VS8b0OEwPOkGCVq75q6aTm4i5fziZDbPI50GuBvahn37l6CtRxYO53h9ashpYR2KMRFac26J-mv_ywDHEqVNQ6iFPuljxbvPcc=FF309C42"
+
+jira_token = "ATATT3xFfGF0UmWAi-LW5-Bx1_c9B-sQs5GV_f-eKkA6clUdYwh-r0hlBKeRg2EJQZ9d9YtVZbf4UsWfopgvkj8nBdiHjX_9vM_ZnBg2zmOnFLA-mH_Ri_efGg-QjKJFnSdZwDfem7vP3LDi8nDIiQG1GE3QEDrEN8tZZ8_xeWUVIm_VuGEgKJo=6345AAD2"
 url = "https://greycloudtransactions.atlassian.net/rest/api/2/search"
 server_name = "https://greycloudtransactions.atlassian.net"
 email = 'GrayCloudTransactions@hotmail.com'
@@ -43,9 +45,68 @@ conexao = mysql.connector.connect(
 
 comando = conexao.cursor()
 
-input_componente = int(input("Qual o id do componente "))
+def login():
+    lista_codigos = []
+    select_componentes = []
+    modo_ativar_login = True
 
-def MostrarValoresCPU(input_componente):
+    if modo_ativar_login == False:
+        comando.execute(f"SELECT componente.* from componente, servidor where codigo = 'XPTO-0987';")
+        return comando.fetchall()
+
+    while modo_ativar_login:
+        while True:
+            MostrarMsgGCT()
+            print('LOGIN: ')
+            email = input("Escreva o seu email: ")
+            senha = input("Escreva sua senha: ")
+            
+            comando.execute(f"SELECT * FROM funcionario WHERE email = '{email}' and senha = '{senha}';")
+
+            get_func = comando.fetchall()
+            if len(get_func) == 1:
+                break
+        
+            else:
+                print("Nome ou senha incorretos")
+                sleep(2)
+                clearConsole()
+                
+                
+        while True:    
+            print("BEM VINDO!")
+            comando.execute(f"SELECT servidor.* FROM servidor WHERE fk_empresa = {get_func[0][8]};")
+            select_server_empresa = comando.fetchall()
+            
+            print("Começar captura de dados! selecione o codigo do servidor \n")
+            
+            for i in select_server_empresa:
+                print(i[2], i[1])
+                lista_codigos.append(i[2])
+            while True:
+            
+                codigo = input("\nCodigo do servidor: ")
+            
+                try:
+                    lista_codigos.index(codigo)
+                
+                except ValueError:
+                    print("Codigo errado!")
+                else:
+                    comando.execute(f"SELECT componente.* from componente, servidor where codigo = '{codigo}';")
+                    select_componentes = comando.fetchall()
+                    
+                    if len(select_componentes) <= 0:
+                        clearConsole()
+                        print("Codigo errado ou servidor sem componentes cadastrados!")
+                    
+                    else:
+                        return select_componentes
+    
+    
+
+
+def MostrarValoresCPU(id_componente):
     porcentagemUtilizacaoCPU = psutil.cpu_percent()
     
     #conexao.close()
@@ -60,7 +121,7 @@ def MostrarValoresCPU(input_componente):
         issue_dict = {
             'project': {'key': 'SUP'},
             'summary': f"Componente está com mais de {porcentagemUtilizacaoCPU}% de uso da CPU!!! ",
-            'description': f'O componente de disco com ID {input_componente} está com mais de {porcentagemUtilizacaoCPU}% de uso da CPU!!!',
+            'description': f'O componente de disco com ID {id_componente} está com mais de {porcentagemUtilizacaoCPU}% de uso da CPU!!!',
             'issuetype': {"id":"10022"},
         }
 
@@ -84,12 +145,14 @@ def MostrarValoresCPU(input_componente):
     dataHoraNow = datetime.now()
     
     comando.execute(f"INSERT INTO `registro`(valor_registro, data_registro, fk_componente) VALUES" 
-                    f"({porcentagemUtilizacaoCPU}, '{dataHoraNow}', {input_componente});")
+                    f"({porcentagemUtilizacaoCPU}, '{dataHoraNow}', {id_componente});")
     
     conexao.commit()
 
-def MostrarValoresDiscoLocal(input_componente):
+def MostrarValoresDiscoLocal(id_componente):
     porcentagem_livre = 100 - psutil.disk_usage('/').percent
+
+    porcentagem_livre = round(porcentagem_livre,2)
 
     bannerDisco()
     print("-" * 100)
@@ -111,7 +174,7 @@ def MostrarValoresDiscoLocal(input_componente):
         issue_dict = {
             'project': {'key': 'SUP'},
             'summary': f"Componente está com apenas {porcentagem_livre}% de espaço livre!!!",
-            'description': f'O componente de disco com ID {input_componente} está com apenas {porcentagem_livre}% de espaço livre!!!',
+            'description': f'O componente de disco com ID {id_componente} está com apenas {porcentagem_livre}% de espaço livre!!!',
             'issuetype': {"id":"10022"},
         }
 
@@ -128,8 +191,8 @@ def MostrarValoresDiscoLocal(input_componente):
     print(psutil.disk_usage('/'))
 
     dataHoraNow = datetime.now()
-    comando.execute(f"INSERT INTO `registro`(valor_registro, data_registro, fk_componente) VALUES" 
-                    f"('{porcentagem_livre}', '{dataHoraNow}',${input_componente});")
+    comando.execute(f"INSERT INTO `registro` (valor_registro, data_registro, fk_componente) VALUES" 
+                    f"('{porcentagem_livre}', '{dataHoraNow}',{id_componente});")
 
     conexao.commit()
 
@@ -137,7 +200,7 @@ def MostrarValoresDiscoLocal(input_componente):
         
 
 # Fim das Info Disco Local
-def MostrarValoresRAM(input_componente):
+def MostrarValoresRAM(id_componente):
 
     valoresMemoriaRam = psutil.virtual_memory()
     ramPercentualUtilizado = valoresMemoriaRam.percent
@@ -172,7 +235,7 @@ def MostrarValoresRAM(input_componente):
     elif ramPercentualUtilizado > 50 :
         print("\n" + "Em uso: " + Fore.YELLOW + str(ramPercentualUtilizado) + "%" + Style.RESET_ALL + "\n")
         
-    else :
+    else:
             print("\n" + "Em uso: " + Fore.GREEN + str(ramPercentualUtilizado) + "%" + Style.RESET_ALL + "\n")
         
     if(swap < 30 and swap > 20):
@@ -190,14 +253,14 @@ def MostrarValoresRAM(input_componente):
             issue_dict = {
                 'project': {'key': 'SUP'},
                 'summary': f"Disco está com mais de {swap}% de uso da memória swap!!! ",
-                'description': f'O componente de disco com ID {input_componente} está com mais de {swap}% de uso da memória swap!!!',
+                'description': f'O componente de disco com ID {id_componente} está com mais de {swap}% de uso da memória swap!!!',
                 'issuetype': {"id":"10022"},
             }
 
             new_issue = jira_connection.create_issue(fields=issue_dict)
             
     else:
-            print("\n" + "Em uso: " + Fore.GREEN + str(swap) + "%" + Style.RESET_ALL + "\n")
+        print("\n" + "Em uso: " + Fore.GREEN + str(swap) + "%" + Style.RESET_ALL + "\n")
         
     print('-' * 100)
     print(valoresMemoriaRam)
@@ -205,61 +268,22 @@ def MostrarValoresRAM(input_componente):
     dataHoraNow = datetime.now()
 
     comando.execute(f"INSERT INTO `registro`(valor_registro, data_registro, fk_componente) VALUES" 
-                        f"('{ramPercentualUtilizado}', '{dataHoraNow}', {input_componente});")
+                        f"('{ramPercentualUtilizado}', '{dataHoraNow}', {id_componente});")
 
     conexao.commit()
 
     print("=" * 100)
 
-def MostrarValores(visuDesejada):
-    visualizacaoDesejada = visuDesejada
-    if visualizacaoDesejada == 1:
-        for i in range(0, 1):
-            clearConsole()
-            MostrarValoresCPU(input_componente)
-            sleep(2)
-            clearConsole()
-    elif visualizacaoDesejada == 2:
-        for i in range(0, 10):
-            clearConsole()
-            MostrarValoresDiscoLocal(input_componente)
-            sleep(2)
-            clearConsole()
-    elif visualizacaoDesejada == 3:
-        for i in range(0, 10):
-            clearConsole()
-            MostrarValoresRAM(input_componente)
-            sleep(2)
-            clearConsole()
-    elif (visualizacaoDesejada == 4):
-        for i in range(0, 10):
-            clearConsole()
-            MostrarValoresCPU(input_componente)
-            MostrarValoresDiscoLocal(input_componente)
-            MostrarValoresRAM(input_componente)
-            sleep(2)
-            clearConsole()
-    elif visualizacaoDesejada == 0:
-        print("\n☁️  Até logo!")
-        exit()
-    voltar = int(input("0 = Voltar a seleção de componentes \n1 = Continuar a captação de dados \n=> "))
-    while voltar != 0 and voltar != 1:
-        voltar = int(input("0 = Voltar a seleção de componentes \n1 = Continuar a captação de dados \n=> "))
-    if voltar == 1:
-        MostrarValores(visualizacaoDesejada)
-    elif voltar == 0:
-        print(visualizacaoDesejada)
-        MensagemTeste()
 
-def MensagemTeste():
-    MostrarMsgGCT()
-    visualizacaoDesejada = int(input("Escolha o componente que deseja visualizar \n1 = CPU \n2 = Disco Local \n3 = Memória RAM \n4 = Todos \n0 = Para finalizar o processo \n=> "))
+componentes = login()
 
-    while visualizacaoDesejada != 1 and visualizacaoDesejada != 2 and visualizacaoDesejada != 3 and visualizacaoDesejada != 4 and visualizacaoDesejada != 0:
-        
-        visualizacaoDesejada = int(input("Escolha o componente que deseja visualizar \n1 = CPU \n2 = Disco Local \n3 = Memória RAM \n4 = Todos \n0 = Para finalizar o processo \n=> "))
-    MostrarValores(visualizacaoDesejada)
-
-# Mensagem inicial
-
-MensagemTeste()
+while True:
+    for i in componentes:
+        if i[1] == 'CPU':
+            MostrarValoresCPU(i[0])
+        if i[1] == 'RAM':
+            MostrarValoresRAM(i[0])
+        if i[1] == 'Disco':
+            MostrarValoresDiscoLocal(i[0])
+            
+    print('Para parar digite ctrl + c')
