@@ -10,7 +10,6 @@ import requests
 import json
 from jira import JIRA
 from API_script_terminal import *
-import keyboard
 
 
 jira_token = "ATATT3xFfGF0UmWAi-LW5-Bx1_c9B-sQs5GV_f-eKkA6clUdYwh-r0hlBKeRg2EJQZ9d9YtVZbf4UsWfopgvkj8nBdiHjX_9vM_ZnBg2zmOnFLA-mH_Ri_efGg-QjKJFnSdZwDfem7vP3LDi8nDIiQG1GE3QEDrEN8tZZ8_xeWUVIm_VuGEgKJo=6345AAD2"
@@ -50,7 +49,7 @@ def login():
     select_componentes = []
     modo_ativar_login = True
 
-    if modo_ativar_login == False:
+    if modo_ativar_login == True:
         comando.execute(f"SELECT componente.* from componente, servidor where codigo = 'XPTO-0987';")
         return comando.fetchall()
 
@@ -125,7 +124,7 @@ def MostrarValoresCPU(id_componente):
             'issuetype': {"id":"10022"},
         }
 
-        new_issue = jira_connection.create_issue(fields=issue_dict)
+        #new_issue = jira_connection.create_issue(fields=issue_dict)
         
         mensagem_CPU = {"text": f"""
             ⚙️ === ALERTA❗️
@@ -144,8 +143,8 @@ def MostrarValoresCPU(id_componente):
 
     dataHoraNow = datetime.now()
     
-    comando.execute(f"INSERT INTO `registro`(valor_registro, data_registro, fk_componente) VALUES" 
-                    f"({porcentagemUtilizacaoCPU}, '{dataHoraNow}', {id_componente});")
+    comando.execute(f"INSERT INTO `registro`(valor_registro, data_registro, fk_componente, fk_medida) VALUES" 
+                    f"({porcentagemUtilizacaoCPU}, '{dataHoraNow}', {id_componente}, 1);")
     
     conexao.commit()
 
@@ -178,7 +177,7 @@ def MostrarValoresDiscoLocal(id_componente):
             'issuetype': {"id":"10022"},
         }
 
-        new_issue = jira_connection.create_issue(fields=issue_dict)
+        #new_issue = jira_connection.create_issue(fields=issue_dict)
         
         print(postMsgDisco.status_code)
     else :
@@ -191,8 +190,8 @@ def MostrarValoresDiscoLocal(id_componente):
     print(psutil.disk_usage('/'))
 
     dataHoraNow = datetime.now()
-    comando.execute(f"INSERT INTO `registro` (valor_registro, data_registro, fk_componente) VALUES" 
-                    f"('{porcentagem_livre}', '{dataHoraNow}',{id_componente});")
+    comando.execute(f"INSERT INTO `registro` (valor_registro, data_registro, fk_componente, fk_medida) VALUES" 
+                    f"('{porcentagem_livre}', '{dataHoraNow}',{id_componente}, 1);")
 
     conexao.commit()
 
@@ -230,7 +229,7 @@ def MostrarValoresRAM(id_componente):
             'description': f'O componente de disco com ID {ramPercentualUtilizado} está com mais de {ramPercentualUtilizado}% de uso da memória RAM!!!',
             'issuetype': {"id":"10022"},
         }
-        new_issue = jira_connection.create_issue(fields=issue_dict)
+        #new_issue = jira_connection.create_issue(fields=issue_dict)
             
     elif ramPercentualUtilizado > 50 :
         print("\n" + "Em uso: " + Fore.YELLOW + str(ramPercentualUtilizado) + "%" + Style.RESET_ALL + "\n")
@@ -257,7 +256,7 @@ def MostrarValoresRAM(id_componente):
                 'issuetype': {"id":"10022"},
             }
 
-            new_issue = jira_connection.create_issue(fields=issue_dict)
+            #new_issue = jira_connection.create_issue(fields=issue_dict)
             
     else:
         print("\n" + "Em uso: " + Fore.GREEN + str(swap) + "%" + Style.RESET_ALL + "\n")
@@ -267,8 +266,11 @@ def MostrarValoresRAM(id_componente):
 
     dataHoraNow = datetime.now()
 
-    comando.execute(f"INSERT INTO `registro`(valor_registro, data_registro, fk_componente) VALUES" 
-                        f"('{ramPercentualUtilizado}', '{dataHoraNow}', {id_componente});")
+    comando.execute(f"INSERT INTO `registro`(valor_registro, data_registro, fk_componente, fk_medida) VALUES" 
+                        f"('{ramPercentualUtilizado}', '{dataHoraNow}', {id_componente}, 1);")
+    
+    comando.execute(f"INSERT INTO `registro`(valor_registro, data_registro, fk_componente, fk_medida) VALUES" 
+                        f"('{swap}', '{dataHoraNow}', {id_componente}, 1);")
 
     conexao.commit()
 
@@ -281,9 +283,12 @@ while True:
     for i in componentes:
         if i[1] == 'CPU':
             MostrarValoresCPU(i[0])
+            sleep(5)
         if i[1] == 'RAM':
             MostrarValoresRAM(i[0])
+            sleep(5)
         if i[1] == 'Disco':
             MostrarValoresDiscoLocal(i[0])
+            sleep(5)
             
     print('Para parar digite ctrl + c')
