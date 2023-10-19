@@ -204,7 +204,7 @@ def MostrarValoresRAM(id_componente):
     valoresMemoriaRam = psutil.virtual_memory()
     ramPercentualUtilizado = valoresMemoriaRam.percent
 
-    swap = psutil.swap_memory().percent
+    #swap = psutil.swap_memory().percent
 
     bannerMemoria()
     print("-" * 100)
@@ -237,29 +237,29 @@ def MostrarValoresRAM(id_componente):
     else:
             print("\n" + "Em uso: " + Fore.GREEN + str(ramPercentualUtilizado) + "%" + Style.RESET_ALL + "\n")
         
-    if(swap < 30 and swap > 20):
-            print("\n" + "Em uso: " + Fore.YELLOW + str(swap) + "%" + Style.RESET_ALL + "\n")
-    elif swap > 30 :
-            print("\n" + "Em uso: " + Fore.RED + str(swap) + "%" + Style.RESET_ALL + "\n")
-            mensagemSwap = {"text": f"""
-                ⚙️ === ALERTA❗️
-                Descrição => Sua Memória SWAP está sobrecarregando!
-                """}
-            chatMonitoramentoSwap = "https://hooks.slack.com/services/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"
-            postMsgSwap = requests.post(chatMonitoramentoSwap, data=json.dumps(mensagemSwap))
-            print(postMsgSwap.status_code)
+    #if(swap < 30 and swap > 20):
+    #        print("\n" + "Em uso: " + Fore.YELLOW + str(swap) + "%" + Style.RESET_ALL + "\n")
+    #elif swap > 30 :
+    #         print("\n" + "Em uso: " + Fore.RED + str(swap) + "%" + Style.RESET_ALL + "\n")
+    #         mensagemSwap = {"text": f"""
+    #             ⚙️ === ALERTA❗️
+    #             Descrição => Sua Memória SWAP está sobrecarregando!
+    #             """}
+    #         chatMonitoramentoSwap = "https://hooks.slack.com/services/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"
+    #         postMsgSwap = requests.post(chatMonitoramentoSwap, data=json.dumps(mensagemSwap))
+    #         print(postMsgSwap.status_code)
             
-            issue_dict = {
-                'project': {'key': 'SUP'},
-                'summary': f"Disco está com mais de {swap}% de uso da memória swap!!! ",
-                'description': f'O componente de disco com ID {id_componente} está com mais de {swap}% de uso da memória swap!!!',
-                'issuetype': {"id":"10022"},
-            }
+    #         issue_dict = {
+    #             'project': {'key': 'SUP'},
+    #             'summary': f"Disco está com mais de {swap}% de uso da memória swap!!! ",
+    #             'description': f'O componente de disco com ID {id_componente} está com mais de {swap}% de uso da memória swap!!!',
+    #             'issuetype': {"id":"10022"},
+    #         }
 
-            #new_issue = jira_connection.create_issue(fields=issue_dict)
+    #         #new_issue = jira_connection.create_issue(fields=issue_dict)
             
-    else:
-        print("\n" + "Em uso: " + Fore.GREEN + str(swap) + "%" + Style.RESET_ALL + "\n")
+    # else:
+    #     print("\n" + "Em uso: " + Fore.GREEN + str(swap) + "%" + Style.RESET_ALL + "\n")
         
     print('-' * 100)
     print(valoresMemoriaRam)
@@ -269,8 +269,8 @@ def MostrarValoresRAM(id_componente):
     comando.execute(f"INSERT INTO `registro`(valor_registro, data_registro, fk_componente, fk_medida) VALUES" 
                         f"('{ramPercentualUtilizado}', '{dataHoraNow}', {id_componente}, 1);")
     
-    comando.execute(f"INSERT INTO `registro`(valor_registro, data_registro, fk_componente, fk_medida) VALUES" 
-                        f"('{swap}', '{dataHoraNow}', {id_componente}, 1);")
+    # comando.execute(f"INSERT INTO `registro`(valor_registro, data_registro, fk_componente, fk_medida) VALUES" 
+    #                     f"('{swap}', '{dataHoraNow}', {id_componente}, 1);")
 
     conexao.commit()
 
