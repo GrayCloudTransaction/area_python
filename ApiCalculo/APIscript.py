@@ -36,8 +36,8 @@ visualizacaoDesejada = 0
 
 conexao = mysql.connector.connect(
         host = "localhost",
-        user = "root",
-        password = "",
+        user = "aluno",
+        password = "sptech",
         port = 3306,
         database = "ScriptGCT"
     )
@@ -114,7 +114,7 @@ def MostrarValoresCPU(id_componente):
     
     print('-' * 100 + "\n")     
     print((" " * 35) + "Porcentagem de Utilização da CPU: \n")
-    if(porcentagemUtilizacaoCPU > 1):
+    if(porcentagemUtilizacaoCPU > 70):
         print("\n" + "Utilização da Total da CPU:" + Fore.RED+str(porcentagemUtilizacaoCPU) + "%" + Style.RESET_ALL + "\n")
         
         issue_dict = {
@@ -131,7 +131,7 @@ def MostrarValoresCPU(id_componente):
             Descrição => Sua CPU está sobrecarregando!
             """}
         chatMonitoramentoCpu = "https://hooks.slack.com/services/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"
-        postMsgCpu = requests.post(chatMonitoramentoCpu, data=json.dumps(mensagem_CPU))
+        #postMsgCpu = requests.post(chatMonitoramentoCpu, data=json.dumps(mensagem_CPU))
         
     elif porcentagemUtilizacaoCPU > 50 :
         print("\n" + "Utilização da Total da CPU:" + Fore.YELLOW+str(porcentagemUtilizacaoCPU) + "%" + Style.RESET_ALL + "\n")
@@ -168,7 +168,7 @@ def MostrarValoresDiscoLocal(id_componente):
             Descrição => Seu Disco está sobrecarregando!
             """}
         chatMonitoramentoDisco = "https://hooks.slack.com/services/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"
-        postMsgDisco = requests.post(chatMonitoramentoDisco, data=json.dumps(mensagemDisco))
+        #postMsgDisco = requests.post(chatMonitoramentoDisco, data=json.dumps(mensagemDisco))
         
         issue_dict = {
             'project': {'key': 'SUP'},
@@ -178,9 +178,7 @@ def MostrarValoresDiscoLocal(id_componente):
         }
 
         #new_issue = jira_connection.create_issue(fields=issue_dict)
-        
-        print(postMsgDisco.status_code)
-    else :
+    else:
         print("\n" + "Em uso: " + Fore.GREEN + str(porcentagem_livre) + "%" + Style.RESET_ALL + "\n")
     
     print('-' * 100)
@@ -200,7 +198,6 @@ def MostrarValoresDiscoLocal(id_componente):
 
 # Fim das Info Disco Local
 def MostrarValoresRAM(id_componente):
-
     valoresMemoriaRam = psutil.virtual_memory()
     ramPercentualUtilizado = valoresMemoriaRam.percent
 
@@ -220,8 +217,7 @@ def MostrarValoresRAM(id_componente):
             Descrição => Sua Memória RAM está sobrecarregando!
             """}
         chatMonitoramentoRam = "https://hooks.slack.com/services/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"
-        postMsgRam = requests.post(chatMonitoramentoRam, data=json.dumps(mensagemRam))
-        print(postMsgRam.status_code)
+        #postMsgRam = requests.post(chatMonitoramentoRam, data=json.dumps(mensagemRam))
         
         issue_dict = {
             'project': {'key': 'SUP'},
