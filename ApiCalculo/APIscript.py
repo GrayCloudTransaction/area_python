@@ -36,8 +36,8 @@ visualizacaoDesejada = 0
 
 conexao = mysql.connector.connect(
         host = "localhost",
-        user = "aluno",
-        password = "sptech",
+        user = "root",
+        password = "",
         port = 3306,
         database = "ScriptGCT"
     )
@@ -279,12 +279,11 @@ while True:
     for i in componentes:
         if i[1] == 'CPU':
             MostrarValoresCPU(i[0])
-            sleep(5)
         if i[1] == 'RAM':
             MostrarValoresRAM(i[0])
-            sleep(5)
         if i[1] == 'Disco':
             MostrarValoresDiscoLocal(i[0])
-            sleep(5)
+            
+    sleep(5)        
             
     print('Para parar digite ctrl + c')
