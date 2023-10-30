@@ -31,13 +31,12 @@ jira_connection = JIRA(
 
 #new_issue = jira_connection.create_issue(fields=issue_dict)
 
-
 visualizacaoDesejada = 0
 
 conexao = mysql.connector.connect(
         host = "localhost",
-        user = "root",
-        password = "",
+        user = "aluno",
+        password = "sptech",
         port = 3306,
         database = "ScriptGCT"
     )
@@ -51,7 +50,12 @@ def login():
 
     if modo_ativar_login == True:
         comando.execute(f"SELECT componente.* from componente, servidor where codigo = 'XPTO-0987';")
-        return comando.fetchall()
+        select_componentes = comando.fetchall()
+        
+        comando.execute(f"SELECT id_servidor FROM servidor WHERE codigo = 'XPTO-0987';")
+        id_servidor = comando.fetchall()
+                    
+        return select_componentes, id_servidor
 
     while modo_ativar_login:
         while True:
@@ -83,7 +87,6 @@ def login():
                 print(i[2], i[1])
                 lista_codigos.append(i[2])
             while True:
-            
                 codigo = input("\nCodigo do servidor: ")
             
                 try:
@@ -95,6 +98,11 @@ def login():
                     comando.execute(f"SELECT componente.* from componente, servidor where codigo = '{codigo}';")
                     select_componentes = comando.fetchall()
                     
+                    comando.execute(f"SELECT id_servidor WHERE codigo = '{codigo}';")
+                    id_servidor = comando.fetchall()
+                    
+                    print(id_servidor)
+                    
                     if len(select_componentes) <= 0:
                         clearConsole()
                         print("Codigo errado ou servidor sem componentes cadastrados!")
@@ -103,10 +111,9 @@ def login():
                         return select_componentes
     
     
-
-
 def MostrarValoresCPU(id_componente):
     porcentagemUtilizacaoCPU = psutil.cpu_percent()
+    valor_risco = 0
     
     #conexao.close()
 
@@ -132,9 +139,12 @@ def MostrarValoresCPU(id_componente):
             """}
         chatMonitoramentoCpu = "https://hooks.slack.com/services/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"
         #postMsgCpu = requests.post(chatMonitoramentoCpu, data=json.dumps(mensagem_CPU))
+        valor_risco = 4
+        
         
     elif porcentagemUtilizacaoCPU > 50 :
         print("\n" + "Utilização da Total da CPU:" + Fore.YELLOW+str(porcentagemUtilizacaoCPU) + "%" + Style.RESET_ALL + "\n")
+        valor_risco = 1
     else :
         print("\n" + "Utilização da Total da CPU:" + Fore.GREEN+str(porcentagemUtilizacaoCPU) + "%" + Style.RESET_ALL + "\n")
     
@@ -147,11 +157,14 @@ def MostrarValoresCPU(id_componente):
                     f"({porcentagemUtilizacaoCPU}, '{dataHoraNow}', {id_componente}, 1);")
     
     conexao.commit()
+    
+    return valor_risco
 
 def MostrarValoresDiscoLocal(id_componente):
     porcentagem_livre = 100 - psutil.disk_usage('/').percent
-
     porcentagem_livre = round(porcentagem_livre,2)
+    
+    valor_risco = 0
 
     bannerDisco()
     print("-" * 100)
@@ -161,6 +174,7 @@ def MostrarValoresDiscoLocal(id_componente):
 
     if(porcentagem_livre < 40):
         print("\n" + "Em uso: " + Fore.YELLOW + str(porcentagem_livre) + "%" + Style.RESET_ALL + "\n")
+        valor_risco = 1
     elif porcentagem_livre < 20 :
         print("\n" + "Em uso: " + Fore.RED + str(porcentagem_livre) + "%" + Style.RESET_ALL + "\n")
         mensagemDisco = {"text": f"""
@@ -178,6 +192,8 @@ def MostrarValoresDiscoLocal(id_componente):
         }
 
         #new_issue = jira_connection.create_issue(fields=issue_dict)
+        
+        valor_risco = 4
     else:
         print("\n" + "Em uso: " + Fore.GREEN + str(porcentagem_livre) + "%" + Style.RESET_ALL + "\n")
     
@@ -194,12 +210,13 @@ def MostrarValoresDiscoLocal(id_componente):
     conexao.commit()
 
     print("=" * 100)
-        
+    return valor_risco    
 
 # Fim das Info Disco Local
 def MostrarValoresRAM(id_componente):
     valoresMemoriaRam = psutil.virtual_memory()
     ramPercentualUtilizado = valoresMemoriaRam.percent
+    valor_risco = 0
 
     #swap = psutil.swap_memory().percent
 
@@ -226,12 +243,15 @@ def MostrarValoresRAM(id_componente):
             'issuetype': {"id":"10022"},
         }
         #new_issue = jira_connection.create_issue(fields=issue_dict)
+        valor_risco = 4
             
     elif ramPercentualUtilizado > 50 :
         print("\n" + "Em uso: " + Fore.YELLOW + str(ramPercentualUtilizado) + "%" + Style.RESET_ALL + "\n")
+        valor_risco = 1
         
     else:
-            print("\n" + "Em uso: " + Fore.GREEN + str(ramPercentualUtilizado) + "%" + Style.RESET_ALL + "\n")
+        print("\n" + "Em uso: " + Fore.GREEN + str(ramPercentualUtilizado) + "%" + Style.RESET_ALL + "\n")
+        
         
     #if(swap < 30 and swap > 20):
     #        print("\n" + "Em uso: " + Fore.YELLOW + str(swap) + "%" + Style.RESET_ALL + "\n")
@@ -272,18 +292,39 @@ def MostrarValoresRAM(id_componente):
 
     print("=" * 100)
 
+    return valor_risco
 
-componentes = login()
+def atualizar_servidor(id_servidor, prioridade):
+    sql = f"UPDATE servidor SET prioridade = {prioridade} WHERE id_servidor = {id_servidor}"
+    print(sql)
+    comando.execute(sql)
+    conexao.commit()
+
+selects = login()
+risco_check = None
+risco = 0
+risco_cpu = 0
+risco_ram = 0
+risco_disco = 0
 
 while True:
-    for i in componentes:
+    for i in selects[0]:
         if i[1] == 'CPU':
-            MostrarValoresCPU(i[0])
+            risco_cpu = MostrarValoresCPU(i[0])
         if i[1] == 'RAM':
-            MostrarValoresRAM(i[0])
+            risco_ram = MostrarValoresRAM(i[0])
         if i[1] == 'Disco':
-            MostrarValoresDiscoLocal(i[0])
+            risco_disco = MostrarValoresDiscoLocal(i[0])
             
-    sleep(5)        
-            
+    risco = risco_cpu + risco_disco + risco_ram
+    
+    if risco_check == None:
+        risco_check = risco
+        
+    if risco_check != risco:
+        atualizar_servidor(selects[1][0][0], risco)
+    risco_check = risco
+
+    sleep(5)
+
     print('Para parar digite ctrl + c')
